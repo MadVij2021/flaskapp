@@ -1,40 +1,46 @@
-from flask import Flask, render_template, request, jsonify
+import base64
 import cv2
 import numpy as np
-import base64
-from io import BytesIO
-from PIL import Image
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
+import io
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 
-# Route to display the webcam feed
 @app.route('/')
 def index():
+    # Serve the HTML page that displays the webcam and processed feed
     return render_template('index.html')
 
-# Route to process webcam frame
-@app.route('/process-frame', methods=['POST'])
-def process_frame():
-    # Get the base64-encoded image from the request
-    data = request.get_json()
+@socketio.on('frame')
+def handle_frame(data):
+    """
+    Handle incoming webcam frame data from the frontend, process it,
+    and send back the processed frame.
+    """
+    # Extract the base64-encoded image from the data
     img_data = data['image']
     
-    # Decode the base64 image
-    img_data = img_data.split(',')[1]  # Remove the data URL part
+    # Decode the base64 string into bytes
+    img_data = img_data.split(',')[1]  # Remove the "data:image/jpeg;base64," part
     img_bytes = base64.b64decode(img_data)
 
-    # Convert the bytes into a NumPy array
+    # Convert the bytes to a NumPy array
     nparr = np.frombuffer(img_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
-    # Perform some processing on the image (e.g., convert to grayscale)
+    img=cv2.flip(img,0)
+
+    # Process the image (for example, convert to grayscale)
     processed_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    
-    # Convert the processed image back to base64 to send to the frontend
+
+    # Convert the processed image back to JPEG
     _, buffer = cv2.imencode('.jpg', processed_img)
     processed_img_base64 = base64.b64encode(buffer).decode('utf-8')
 
-    return jsonify({'processed_image': f"data:image/jpeg;base64,{processed_img_base64}"})
+    # Send the processed image back to the frontend
+    emit('processed_frame', {'image': f"data:image/jpeg;base64,{processed_img_base64}"})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, debug=True)

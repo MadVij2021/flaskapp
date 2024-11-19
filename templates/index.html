@@ -3,18 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webcam Capture</title>
+    <title>Live Webcam Feed with Processing</title>
+    <style>
+        #processed-frame { width: 640px; height: 480px; }
+    </style>
 </head>
 <body>
-    <h1>Webcam Feed with Frame Processing</h1>
-    <video id="webcam" width="640" height="480" autoplay></video>
-    <button id="capture-btn">Capture Frame</button>
+    <h1>Live Processed Webcam Feed</h1>
+    <!-- Raw webcam feed is hidden now -->
+    <video id="webcam" width="640" height="480" autoplay style="display: none;"></video> <!-- Hidden video -->
+    <h3>Processed Frame</h3>
     <img id="processed-frame" width="640" alt="Processed Frame" />
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.1/socket.io.min.js"></script>
     <script>
-        // Access webcam stream
+        // Set up the WebSocket connection to the Flask backend
+        const socket = io.connect(location.origin);
+
+        // Access the webcam stream
         const video = document.getElementById('webcam');
-        const captureBtn = document.getElementById('capture-btn');
         const processedFrame = document.getElementById('processed-frame');
         let stream;
 
@@ -28,31 +35,25 @@
                 console.error('Error accessing webcam: ', err);
             });
 
-        // Function to capture a frame
-        captureBtn.addEventListener('click', function() {
+        // Capture and send frames to the server every 100ms
+        setInterval(function() {
             const canvas = document.createElement('canvas');
             canvas.width = 640;
             canvas.height = 480;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            // Convert canvas to a base64 image
+            // Convert the canvas to base64-encoded JPEG
             const imgData = canvas.toDataURL('image/jpeg');
 
-            // Send the frame to the Flask backend for processing
-            fetch('/process-frame', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ image: imgData })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Display the processed frame (received from Flask)
-                processedFrame.src = data.processed_image;
-            })
-            .catch(error => console.error('Error:', error));
+            // Send the captured frame to the server
+            socket.emit('frame', { image: imgData });
+        }, 100);  // Capture and send a frame every 100ms
+
+        // Listen for processed frames from the server
+        socket.on('processed_frame', function(data) {
+            // Display the processed frame received from the server
+            processedFrame.src = data.image;
         });
     </script>
 </body>
