@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webcam Capture</title>
+</head>
+<body>
+    <h1>Webcam Feed</h1>
+    <video id="webcam" width="640" height="480" autoplay></video>
+
+    <script>
+        // Access the webcam using getUserMedia API
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                document.getElementById('webcam').srcObject = stream;
+            })
+            .catch(function(error) {
+                console.error('Error accessing webcam: ', error);
+            });
+    </script>
+</body>
+</html>
