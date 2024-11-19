@@ -23,11 +23,11 @@ def generate_frames():
             
     
 
-@app.route('/')
+@app.route('/homepage')
 def homepage():
     return "harshit chopra kaisa hai bhai"
 
-@app.route('/video')
+@app.route('/video_feed')
 def video_feed():
     # Return the streaming response to the browser
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
