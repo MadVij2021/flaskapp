@@ -6,18 +6,54 @@
     <title>Webcam Capture</title>
 </head>
 <body>
-    <h1>Webcam Feed</h1>
+    <h1>Webcam Feed with Frame Processing</h1>
     <video id="webcam" width="640" height="480" autoplay></video>
+    <button id="capture-btn">Capture Frame</button>
+    <img id="processed-frame" width="640" alt="Processed Frame" />
 
     <script>
-        // Access the webcam using getUserMedia API
+        // Access webcam stream
+        const video = document.getElementById('webcam');
+        const captureBtn = document.getElementById('capture-btn');
+        const processedFrame = document.getElementById('processed-frame');
+        let stream;
+
+        // Start the webcam stream
         navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                document.getElementById('webcam').srcObject = stream;
+            .then(function(s) {
+                stream = s;
+                video.srcObject = stream;
             })
-            .catch(function(error) {
-                console.error('Error accessing webcam: ', error);
+            .catch(function(err) {
+                console.error('Error accessing webcam: ', err);
             });
+
+        // Function to capture a frame
+        captureBtn.addEventListener('click', function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert canvas to a base64 image
+            const imgData = canvas.toDataURL('image/jpeg');
+
+            // Send the frame to the Flask backend for processing
+            fetch('/process-frame', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ image: imgData })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display the processed frame (received from Flask)
+                processedFrame.src = data.processed_image;
+            })
+            .catch(error => console.error('Error:', error));
+        });
     </script>
 </body>
 </html>
