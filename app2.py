@@ -12,13 +12,13 @@ from mediapipe.framework.formats import landmark_pb2
 import numpy as np
 import cv2
 from PIL import Image
-
+from flask_cors import CORS
 
 MODEL_PATH = r"pose_landmarker_lite.task"
 
 app = Flask(__name__)
+CORS(app)
 socketio = SocketIO(app)
-
 
 
 # Drawing landmarks
@@ -84,4 +84,4 @@ def handle_frame(data):
     emit('processed_frame', {'image': f"data:image/jpeg;base64,{processed_img_base64}"})
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True)
+    socketio.run(app, debug=True, use_reloader=False)

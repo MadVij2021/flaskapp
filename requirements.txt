@@ -3,3 +3,4 @@ opencv-python
 gunicorn
 flask_socketio
 mediapipe
+flask-cors
