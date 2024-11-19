@@ -14,7 +14,7 @@ import cv2
 from PIL import Image
 
 
-MODEL_PATH = r"C:\Users\lenovo\Downloads\pose_landmarker_lite.task"
+MODEL_PATH = r"pose_landmarker_lite.task"
 
 app = Flask(__name__)
 socketio = SocketIO(app)
