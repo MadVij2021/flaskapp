@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Live Webcam Feed with Processing</title>
     <style>
+        #webcam { width: 640px; height: 480px; }
         #processed-frame { width: 640px; height: 480px; }
     </style>
 </head>
 <body>
-    <h1>Live Processed Webcam Feed</h1>
-    <!-- Raw webcam feed is hidden now -->
-    <video id="webcam" width="640" height="480" autoplay style="display: none;"></video> <!-- Hidden video -->
+    <h1>Live Webcam Feed with Frame Processing</h1>
+    <video id="webcam" width="640" height="480" autoplay></video>
     <h3>Processed Frame</h3>
     <img id="processed-frame" width="640" alt="Processed Frame" />
 

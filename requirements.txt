@@ -2,3 +2,4 @@ flask
 opencv-python
 gunicorn
 flask_socketio
+mediapipe
